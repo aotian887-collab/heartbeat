@@ -347,7 +347,6 @@
   const tips = [
     "指数还不错，今天适合多聊几句",
     "超过 85 了，你懂的 😏",
-    "今天要不要约她出来？",
     "心动不可耻，可耻的是不行动",
     "暧昧期最美好，但也别拖太久哦",
     "她在等你主动",
@@ -417,9 +416,14 @@
     document.getElementById('responseText').classList.add('hidden');
   }
 
+  let refreshCount = 0;
+
   function refresh() {
-    const rng = seedRandom(dateSeed() + quoteIndex + 7);
-    let newIndex = Math.floor(rng() * quotes.length);
+    refreshCount++;
+    // 用刷新次数做偏移，确保每次都能跳到不同的句子
+    let newIndex = (quoteIndex + 3 + refreshCount * 7) % quotes.length;
+    // 再叠加 Math.random 微调，确保相邻点击不走同一条路径
+    newIndex = (newIndex + Math.floor(Math.random() * (quotes.length - 1))) % quotes.length;
     if (newIndex === quoteIndex) newIndex = (newIndex + 1) % quotes.length;
     quoteIndex = newIndex;
     const el = document.getElementById('quoteText');
@@ -432,7 +436,8 @@
   }
 
   function onMeToo() {
-    const resp = pick(meTooResponses, seedRandom(Date.now()));
+    // 直接用 Math.random，每次都是真正随机的
+    const resp = meTooResponses[Math.floor(Math.random() * meTooResponses.length)];
     const el = document.getElementById('responseText');
     el.textContent = resp;
     el.classList.remove('hidden');
