@@ -464,6 +464,85 @@
       color: #ddd;
       letter-spacing: 1px;
     }
+
+    /* ========== 时段问候 ========== */
+    .greeting {
+      font-size: 13px;
+      color: #c7507a;
+      font-weight: 600;
+      margin-bottom: 10px;
+      animation: fadeUp 0.6s ease;
+    }
+
+    /* ========== 满100庆祝 ========== */
+    .celebrate-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.4);
+      z-index: 300;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: overlayIn 0.3s ease;
+    }
+    .celebrate-card {
+      background: #fff;
+      border-radius: 24px;
+      padding: 32px 24px 28px;
+      max-width: 300px;
+      width: 88%;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+      animation: easterBounce 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .celebrate-icon {
+      font-size: 52px;
+      margin-bottom: 10px;
+    }
+    .celebrate-title {
+      font-size: 20px;
+      color: #c7507a;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .celebrate-msg {
+      font-size: 14px;
+      color: #6b3a50;
+      line-height: 1.7;
+      margin-bottom: 18px;
+    }
+    .celebrate-close {
+      background: linear-gradient(135deg, #c7507a, #b8406a);
+      color: #fff;
+      border: none;
+      border-radius: 99px;
+      padding: 10px 30px;
+      font-size: 14px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .celebrate-close:active { transform: scale(0.96); }
+
+    /* 庆祝撒花 */
+    .confetti-container {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 301;
+    }
+    .confetti-piece {
+      position: absolute;
+      top: -40px;
+      font-size: 22px;
+      animation: confettiFall linear forwards;
+    }
+    @keyframes confettiFall {
+      0%   { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
+      70%  { opacity: 1; }
+      100% { transform: translateY(110vh) rotate(720deg) scale(0.4); opacity: 0; }
+    }
   </style>
 </head>
 <body>
@@ -473,6 +552,7 @@
 
 <div class="card">
   <div class="her-name">TO · 雨婷</div>
+  <div class="greeting" id="greetingText"></div>
   <div class="date-text" id="dateText"></div>
 
   <!-- 标题：连续点3次触发彩蛋 -->
@@ -530,6 +610,17 @@
     <div class="easter-title">你发现了我的秘密 🎁</div>
     <div class="easter-msg" id="easterMsg"></div>
     <button class="easter-close" onclick="closeEaster()">🍬 偷偷收好</button>
+  </div>
+</div>
+
+<!-- 庆祝弹窗 -->
+<div class="celebrate-overlay hidden" id="celebrateOverlay">
+  <div class="confetti-container" id="confettiContainer"></div>
+  <div class="celebrate-card">
+    <div class="celebrate-icon">🎉</div>
+    <div class="celebrate-title">心动值满了！</div>
+    <div class="celebrate-msg" id="celebrateMsg">今天的你让心动指数直接拉满了 💯<br>—— 这大概就是心动的感觉吧 🌸</div>
+    <button class="celebrate-close" onclick="closeCelebrate()">✨ 收到</button>
   </div>
 </div>
 
@@ -639,6 +730,9 @@
     } else {
       document.getElementById('countdownDays').textContent = remain;
     }
+
+    // 时段问候
+    updateGreeting(now);
 
     // 页面首次渲染用日期种子（同一天打开看到的内容一致）
     currentRng = seedRandom(dateSeed());
@@ -776,6 +870,12 @@
 
       updateTapLabel(baseHeartValue, taps);
 
+      // 戳满 100% 庆祝
+      if (displayValue >= 100 && !getCelebrated()) {
+        setCelebrated();
+        showCelebrate();
+      }
+
       // 从点击位置冒出 +1
       const rect = bar.getBoundingClientRect();
       const x = e.clientX - rect.left;
@@ -883,6 +983,48 @@
       h.style.animationDelay = (Math.random() * 12) + 's';
       bg.appendChild(h);
     }
+  }
+
+  // ============ 时段问候 ============
+  function updateGreeting(now) {
+    const h = now.getHours();
+    let msg;
+    if (h >= 5 && h < 10)      msg = '早安 ☀️  今天也要元气满满';
+    else if (h >= 10 && h < 12) msg = '上午好 🌤️  忙完了吗';
+    else if (h >= 12 && h < 14) msg = '中午好 🍚  记得好好吃饭';
+    else if (h >= 14 && h < 18) msg = '下午好 ☕  今天累不累';
+    else if (h >= 18 && h < 22) msg = '晚上好 🌙  今天过得开心吗';
+    else                        msg = '夜深了 ✨  看完早点休息';
+    document.getElementById('greetingText').textContent = msg;
+  }
+
+  // ============ 戳满100%庆祝 ============
+  function getCelebrated() {
+    return localStorage.getItem('celebrated_' + getTodayKey()) === '1';
+  }
+  function setCelebrated() {
+    localStorage.setItem('celebrated_' + getTodayKey(), '1');
+  }
+
+  function showCelebrate() {
+    document.getElementById('celebrateOverlay').classList.remove('hidden');
+    const container = document.getElementById('confettiContainer');
+    const emojis = ['🎉', '🌸', '✨', '💯', '💕', '🎊', '💗', '🥳'];
+    for (let i = 0; i < 30; i++) {
+      const piece = document.createElement('div');
+      piece.className = 'confetti-piece';
+      piece.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+      piece.style.left = Math.random() * 100 + '%';
+      piece.style.fontSize = (16 + Math.random() * 16) + 'px';
+      piece.style.animationDuration = (2 + Math.random() * 3) + 's';
+      piece.style.animationDelay = Math.random() * 1 + 's';
+      container.appendChild(piece);
+      setTimeout(function() { piece.remove(); }, 4000);
+    }
+  }
+
+  function closeCelebrate() {
+    document.getElementById('celebrateOverlay').classList.add('hidden');
   }
 
   spawnFloating();
