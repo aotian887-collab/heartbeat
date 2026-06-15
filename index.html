@@ -256,49 +256,92 @@
     }
     .refresh-btn:active { background: #fdf8fa; }
 
-    /* ========== 心情打卡 ========== */
-    .mood-section {
+    /* ========== 悄悄话信箱 ========== */
+    .notes-section {
       border-top: 1px solid #f3e8ee;
-      padding-top: 18px;
-      margin-bottom: 6px;
+      padding-top: 16px;
+      margin-bottom: 2px;
     }
-    .mood-label {
+    .notes-label {
       font-size: 12px;
       color: #b8a0ae;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       letter-spacing: 1px;
     }
-    .mood-emojis {
+    .notes-input-row {
       display: flex;
-      justify-content: center;
-      gap: 12px;
-      margin-bottom: 8px;
+      gap: 8px;
+      margin-bottom: 6px;
     }
-    .mood-btn {
-      width: 40px; height: 40px;
-      border-radius: 50%;
-      border: 2px solid transparent;
+    .notes-input {
+      flex: 1;
+      border: 1.5px solid #eedde6;
+      border-radius: 99px;
+      padding: 8px 16px;
+      font-size: 13px;
+      color: #6b3a50;
       background: #fdf8fa;
-      font-size: 22px;
+      outline: none;
+      transition: border 0.2s;
+      font-family: inherit;
+    }
+    .notes-input:focus { border-color: #d98fa9; }
+    .notes-input::placeholder { color: #d4c0cc; }
+    .notes-send-btn {
+      border: none;
+      border-radius: 99px;
+      background: linear-gradient(135deg, #d98fa9, #c7507a);
+      color: #fff;
+      padding: 8px 18px;
+      font-size: 13px;
+      font-weight: 600;
       cursor: pointer;
-      transition: all 0.25s;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .notes-send-btn:active { transform: scale(0.95); }
+    .notes-sent-toast {
+      font-size: 12px;
+      color: #c7507a;
+      min-height: 18px;
+      font-weight: 500;
+      animation: popIn 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+      margin-bottom: 4px;
+    }
+    .notes-list {
+      max-height: 140px;
+      overflow-y: auto;
+      text-align: left;
+    }
+    .note-item {
+      background: #fdf8fa;
+      border-radius: 10px;
+      padding: 8px 12px;
+      margin-bottom: 6px;
       display: flex;
-      align-items: center;
-      justify-content: center;
-      line-height: 1;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+      animation: fadeUp 0.3s ease;
     }
-    .mood-btn:active { transform: scale(0.9); }
-    .mood-btn.selected {
-      border-color: #c7507a;
-      background: #fef0f4;
-      transform: scale(1.1);
+    .note-item .note-text {
+      font-size: 12px;
+      color: #6b3a50;
+      line-height: 1.5;
+      flex: 1;
     }
-    .mood-status {
-      font-size: 11px;
+    .note-item .note-date {
+      font-size: 10px;
       color: #c9a8b8;
-      min-height: 16px;
+      white-space: nowrap;
+      padding-top: 2px;
     }
-    .mood-status .mood-emoji { font-size: 14px; }
+    .note-empty {
+      font-size: 11px;
+      color: #d4c0cc;
+      text-align: center;
+      padding: 6px 0;
+    }
 
     /* ========== 彩蛋弹窗 ========== */
     .easter-overlay {
@@ -430,11 +473,15 @@
 
   <button class="refresh-btn" onclick="refresh()">换一句话</button>
 
-  <!-- ========== 今日心情打卡 ========== -->
-  <div class="mood-section">
-    <div class="mood-label">🌙 今天的心情</div>
-    <div class="mood-emojis" id="moodEmojis"></div>
-    <div class="mood-status" id="moodStatus"></div>
+  <!-- ========== 悄悄话信箱 ========== -->
+  <div class="notes-section">
+    <div class="notes-label">💌 想对他说的话</div>
+    <div class="notes-input-row">
+      <input class="notes-input" id="notesInput" type="text" placeholder="写点什么..." maxlength="60" onkeydown="if(event.key==='Enter')sendNote()">
+      <button class="notes-send-btn" onclick="sendNote()">寄出</button>
+    </div>
+    <div class="notes-sent-toast" id="notesToast"></div>
+    <div class="notes-list" id="notesList"></div>
   </div>
 
   <div class="footer">— 用心准备的小惊喜 —</div>
@@ -511,9 +558,6 @@
     "真诚一点，她会感受到的",
   ];
 
-  // 心情 emoji 选项
-  const moodEmojis = ['😊', '😌', '🥰', '😴', '🤔', '😐'];
-
   // 彩蛋内容：每天随机一句（用日期做种子，同一天看到的彩蛋一样）
   const easterMessages = [
     "有些话不好意思当面讲，所以藏这里啦——认识你之后，我的每一天都变得特别起来。谢谢你的出现，雨婷。",
@@ -573,8 +617,8 @@
     currentRng = seedRandom(dateSeed());
     render();
 
-    // 初始化心情打卡
-    initMood();
+    // 初始化悄悄话信箱
+    initNotes();
 
     // 初始化彩蛋
     initEaster();
@@ -638,50 +682,53 @@
     }
   }
 
-  // ============ 心情打卡 ============
-  function initMood() {
-    const today = dateSeed().toString();
-    const saved = localStorage.getItem('mood_' + today);
-    const container = document.getElementById('moodEmojis');
-    const status = document.getElementById('moodStatus');
-
-    // 渲染 emoji 按钮
-    moodEmojis.forEach((emoji, idx) => {
-      const btn = document.createElement('button');
-      btn.className = 'mood-btn';
-      btn.textContent = emoji;
-      btn.onclick = function() {
-        selectMood(idx, emoji, today);
-      };
-      container.appendChild(btn);
-    });
-
-    // 恢复今天已保存的心情
-    if (saved) {
-      const idx = parseInt(saved);
-      container.children[idx]?.classList.add('selected');
-      status.innerHTML = '今天的心情：<span class="mood-emoji">' + moodEmojis[idx] + '</span>';
-    } else {
-      // 看看昨天有没有打卡
-      const d = new Date();
-      d.setDate(d.getDate() - 1);
-      const yday = '' + (d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate());
-      const ydaySaved = localStorage.getItem('mood_' + yday);
-      if (ydaySaved) {
-        status.textContent = '昨天的心情：' + moodEmojis[parseInt(ydaySaved)] + '  今天呢？';
-      }
-    }
+  // ============ 悄悄话信箱 ============
+  function initNotes() {
+    renderNotes();
   }
 
-  function selectMood(idx, emoji, today) {
-    const container = document.getElementById('moodEmojis');
-    const status = document.getElementById('moodStatus');
-    // 切换选中状态
-    Array.from(container.children).forEach((c, i) => {
-      c.classList.toggle('selected', i === idx);
-    });
-    localStorage.setItem('mood_' + today, idx.toString());
-    status.innerHTML = '今天的心情：<span class="mood-emoji">' + emoji + '</span>';
+  function sendNote() {
+    const input = document.getElementById('notesInput');
+    const text = input.value.trim();
+    if (!text) return;
+
+    const now = new Date();
+    const dateStr = `${now.getMonth()+1}/${now.getDate()} ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+
+    let notes = JSON.parse(localStorage.getItem('secret_notes') || '[]');
+    notes.unshift({ text, date: dateStr, ts: Date.now() });
+    if (notes.length > 20) notes = notes.slice(0, 20); // 最多保留 20 条
+    localStorage.setItem('secret_notes', JSON.stringify(notes));
+
+    input.value = '';
+    const toast = document.getElementById('notesToast');
+    toast.textContent = '✉️ 已寄出';
+    toast.style.animation = 'none';
+    toast.offsetHeight;
+    toast.style.animation = 'popIn 0.4s cubic-bezier(0.22, 1, 0.36, 1)';
+
+    renderNotes();
+  }
+
+  function renderNotes() {
+    const notes = JSON.parse(localStorage.getItem('secret_notes') || '[]');
+    const list = document.getElementById('notesList');
+    if (notes.length === 0) {
+      list.innerHTML = '<div class="note-empty">还没有小纸条，写一句吧</div>';
+      return;
+    }
+    list.innerHTML = notes.slice(0, 5).map(n =>
+      `<div class="note-item">
+        <span class="note-text">${escapeHTML(n.text)}</span>
+        <span class="note-date">${n.date}</span>
+      </div>`
+    ).join('');
+  }
+
+  function escapeHTML(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
   }
 
   // ============ 隐藏彩蛋 ============
