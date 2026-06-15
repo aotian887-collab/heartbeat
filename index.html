@@ -656,10 +656,10 @@
 
   function render() {
     const rng = currentRng;
-    const baseHeart = Math.floor(rng() * 34) + 65;
+    const baseHeart = Math.floor(rng() * 51) + 50;
     baseHeartValue = baseHeart;
     const taps = getTapCount();
-    const displayValue = Math.min(baseHeart + taps, 99);
+    const displayValue = Math.min(baseHeart + taps, 100);
 
     document.getElementById('heartNum').textContent = displayValue;
 
@@ -744,7 +744,7 @@
   function updateTapLabel(baseHeart, taps) {
     const el = document.getElementById('meterInteract');
     if (taps > 0) {
-      el.innerHTML = '基础 ' + baseHeart + '% <span class="tap-bonus">+</span> 戳了 <span class="tap-count">' + taps + '</span> 次 <span class="tap-bonus">=</span> <span class="tap-count">' + Math.min(baseHeart + taps, 99) + '%</span>';
+      el.innerHTML = baseHeart + '% <span class="tap-bonus">+</span> 戳了 <span class="tap-count">' + taps + '</span> 次 <span class="tap-bonus">=</span> <span class="tap-count">' + Math.min(baseHeart + taps, 100) + '%</span>';
     } else {
       el.innerHTML = '👆 戳一戳进度条，心动值会涨哦';
     }
@@ -760,7 +760,7 @@
       saveTapCount(taps);
 
       // 重新计算并执行动画
-      const displayValue = Math.min(baseHeartValue + taps, 99);
+      const displayValue = Math.min(baseHeartValue + taps, 100);
       document.getElementById('heartNum').textContent = displayValue;
 
       const fill = document.getElementById('meterFill');
