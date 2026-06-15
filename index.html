@@ -155,22 +155,61 @@
       font-weight: 600;
     }
     .meter-bar {
-      height: 10px;
+      height: 14px;
       background: #f3e8ee;
       border-radius: 99px;
       overflow: hidden;
+      position: relative;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: transform 0.1s;
     }
+    .meter-bar:active { transform: scaleY(1.3); }
     .meter-fill {
       height: 100%;
       border-radius: 99px;
       background: linear-gradient(90deg, #d98fa9, #c7507a, #e86080);
       transition: width 1.8s cubic-bezier(0.22, 1, 0.36, 1);
       width: 0%;
+      position: relative;
+    }
+    .meter-fill.pulse {
+      animation: barPulse 0.4s ease;
+    }
+    @keyframes barPulse {
+      0%   { filter: brightness(1); }
+      50%  { filter: brightness(1.6); }
+      100% { filter: brightness(1); }
+    }
+    .meter-bar .tap-heart {
+      position: absolute;
+      font-size: 18px;
+      pointer-events: none;
+      animation: tapFloat 1s ease-out forwards;
+      z-index: 10;
+      font-weight: 700;
+    }
+    @keyframes tapFloat {
+      0%   { opacity: 1; transform: translateY(0) scale(1); }
+      100% { opacity: 0; transform: translateY(-50px) scale(0.5); }
+    }
+    .meter-interact-label {
+      font-size: 10px;
+      color: #d4c0cc;
+      margin-top: 0;
+      min-height: 14px;
+      letter-spacing: 1px;
+    }
+    .meter-interact-label .tap-count {
+      color: #c7507a;
+      font-weight: 600;
+      font-size: 12px;
     }
     .meter-tip {
       font-size: 11px;
       color: #c9a8b8;
-      margin-top: 8px;
+      margin-top: 6px;
+      margin-bottom: 2px;
       min-height: 16px;
     }
 
@@ -453,9 +492,10 @@
     <div class="meter-label">
       <span class="num" id="heartNum">0</span><span class="unit">%</span>
     </div>
-    <div class="meter-bar">
+    <div class="meter-bar" id="meterBar">
       <div class="meter-fill" id="meterFill"></div>
     </div>
+    <div class="meter-interact-label" id="meterInteract"></div>
     <div class="meter-tip" id="meterTip"></div>
   </div>
 
@@ -620,6 +660,9 @@
     // 初始化悄悄话信箱
     initNotes();
 
+    // 初始化进度条互动
+    initMeterTap();
+
     // 初始化彩蛋
     initEaster();
   }
@@ -628,13 +671,24 @@
     const rng = currentRng;
     const heartValue = Math.floor(rng() * 34) + 65;
     document.getElementById('heartNum').textContent = heartValue;
-    setTimeout(() => {
-      document.getElementById('meterFill').style.width = heartValue + '%';
-    }, 300);
+    // 修复：先设 0% → 强制回流 → 再设目标值，确保 transition 触发
+    const fill = document.getElementById('meterFill');
+    fill.style.transition = 'none';
+    fill.style.width = '0%';
+    fill.offsetHeight; // 强制回流
+    fill.style.transition = 'width 1.8s cubic-bezier(0.22, 1, 0.36, 1)';
+    requestAnimationFrame(function() {
+      requestAnimationFrame(function() {
+        fill.style.width = heartValue + '%';
+      });
+    });
     document.getElementById('meterTip').textContent = pick(tips, rng);
     quoteIndex = Math.floor(rng() * quotes.length);
     document.getElementById('quoteText').textContent = quotes[quoteIndex];
     document.getElementById('responseText').classList.add('hidden');
+
+    // 更新互动计数
+    updateTapCount();
   }
 
   let refreshCount = 0;
@@ -680,6 +734,61 @@
       container.appendChild(p);
       setTimeout(() => p.remove(), 900);
     }
+  }
+
+  // ============ 进度条戳一戳互动 ============
+  function getTodayKey() {
+    const d = new Date();
+    return '' + d.getFullYear() + (d.getMonth()+1).toString().padStart(2,'0') + d.getDate().toString().padStart(2,'0');
+  }
+
+  function getTapCount() {
+    const key = getTodayKey();
+    return parseInt(localStorage.getItem('heart_taps_' + key) || '0');
+  }
+
+  function saveTapCount(n) {
+    const key = getTodayKey();
+    localStorage.setItem('heart_taps_' + key, n.toString());
+  }
+
+  function updateTapCount() {
+    const count = getTapCount();
+    const el = document.getElementById('meterInteract');
+    if (count > 0) {
+      el.innerHTML = '今天戳了 <span class="tap-count">' + count + '</span> 次，心动指数都在涨哦';
+    } else {
+      el.innerHTML = '👆 戳一戳上面的进度条试试';
+    }
+  }
+
+  function initMeterTap() {
+    updateTapCount();
+    const bar = document.getElementById('meterBar');
+    bar.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const count = getTapCount() + 1;
+      saveTapCount(count);
+      updateTapCount();
+
+      // 脉冲动画
+      const fill = document.getElementById('meterFill');
+      fill.classList.remove('pulse');
+      void fill.offsetWidth;
+      fill.classList.add('pulse');
+
+      // 从点击位置冒出 +1
+      const rect = bar.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const heart = document.createElement('div');
+      heart.className = 'tap-heart';
+      heart.textContent = '+1 💓';
+      heart.style.left = x + 'px';
+      heart.style.top = y + 'px';
+      bar.appendChild(heart);
+      setTimeout(function() { heart.remove(); }, 1000);
+    });
   }
 
   // ============ 悄悄话信箱 ============
