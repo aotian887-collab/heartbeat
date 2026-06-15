@@ -194,23 +194,20 @@
       100% { opacity: 0; transform: translateY(-50px) scale(0.5); }
     }
     .meter-interact-label {
-      font-size: 10px;
-      color: #d4c0cc;
-      margin-top: 0;
-      min-height: 14px;
-      letter-spacing: 1px;
+      font-size: 11px;
+      color: #b8a0ae;
+      margin-top: 4px;
+      min-height: 30px;
+      letter-spacing: 0;
     }
     .meter-interact-label .tap-count {
       color: #c7507a;
-      font-weight: 600;
-      font-size: 12px;
+      font-weight: 700;
+      font-size: 13px;
     }
-    .meter-tip {
-      font-size: 11px;
-      color: #c9a8b8;
-      margin-top: 6px;
-      margin-bottom: 2px;
-      min-height: 16px;
+    .meter-interact-label .tap-bonus {
+      color: #e89fb5;
+      font-weight: 600;
     }
 
     .quote-box {
@@ -496,7 +493,6 @@
       <div class="meter-fill" id="meterFill"></div>
     </div>
     <div class="meter-interact-label" id="meterInteract"></div>
-    <div class="meter-tip" id="meterTip"></div>
   </div>
 
   <div class="quote-box">
@@ -588,16 +584,6 @@
     "那我们挺有默契的嘛",
   ];
 
-  const tips = [
-    "指数还不错，今天适合多聊几句",
-    "超过 85 了，你懂的 😏",
-    "心动不可耻，可耻的是不行动",
-    "暧昧期最美好，但也别拖太久哦",
-    "她在等你主动",
-    "今天也好好照顾她",
-    "真诚一点，她会感受到的",
-  ];
-
   // 彩蛋内容：每天随机一句（用日期做种子，同一天看到的彩蛋一样）
   const easterMessages = [
     "有些话不好意思当面讲，所以藏这里啦——认识你之后，我的每一天都变得特别起来。谢谢你的出现，雨婷。",
@@ -633,6 +619,7 @@
   // ============ 主逻辑 ============
   let currentRng = null;
   let quoteIndex = 0;
+  let baseHeartValue = 0; // 当天基准心动值
 
   function init() {
     const now = new Date();
@@ -669,26 +656,30 @@
 
   function render() {
     const rng = currentRng;
-    const heartValue = Math.floor(rng() * 34) + 65;
-    document.getElementById('heartNum').textContent = heartValue;
-    // 修复：先设 0% → 强制回流 → 再设目标值，确保 transition 触发
+    const baseHeart = Math.floor(rng() * 34) + 65;
+    baseHeartValue = baseHeart;
+    const taps = getTapCount();
+    const displayValue = Math.min(baseHeart + taps, 99);
+
+    document.getElementById('heartNum').textContent = displayValue;
+
+    // 动画：先归零 → 再涨到最终值
     const fill = document.getElementById('meterFill');
     fill.style.transition = 'none';
     fill.style.width = '0%';
-    fill.offsetHeight; // 强制回流
+    fill.offsetHeight;
     fill.style.transition = 'width 1.8s cubic-bezier(0.22, 1, 0.36, 1)';
     requestAnimationFrame(function() {
       requestAnimationFrame(function() {
-        fill.style.width = heartValue + '%';
+        fill.style.width = displayValue + '%';
       });
     });
-    document.getElementById('meterTip').textContent = pick(tips, rng);
+
     quoteIndex = Math.floor(rng() * quotes.length);
     document.getElementById('quoteText').textContent = quotes[quoteIndex];
     document.getElementById('responseText').classList.add('hidden');
 
-    // 更新互动计数
-    updateTapCount();
+    updateTapLabel(baseHeart, taps);
   }
 
   let refreshCount = 0;
@@ -743,39 +734,45 @@
   }
 
   function getTapCount() {
-    const key = getTodayKey();
-    return parseInt(localStorage.getItem('heart_taps_' + key) || '0');
+    return parseInt(localStorage.getItem('heart_taps_' + getTodayKey()) || '0');
   }
 
   function saveTapCount(n) {
-    const key = getTodayKey();
-    localStorage.setItem('heart_taps_' + key, n.toString());
+    localStorage.setItem('heart_taps_' + getTodayKey(), n.toString());
   }
 
-  function updateTapCount() {
-    const count = getTapCount();
+  function updateTapLabel(baseHeart, taps) {
     const el = document.getElementById('meterInteract');
-    if (count > 0) {
-      el.innerHTML = '今天戳了 <span class="tap-count">' + count + '</span> 次，心动指数都在涨哦';
+    if (taps > 0) {
+      el.innerHTML = '基础 ' + baseHeart + '% <span class="tap-bonus">+</span> 戳了 <span class="tap-count">' + taps + '</span> 次 <span class="tap-bonus">=</span> <span class="tap-count">' + Math.min(baseHeart + taps, 99) + '%</span>';
     } else {
-      el.innerHTML = '👆 戳一戳上面的进度条试试';
+      el.innerHTML = '👆 戳一戳进度条，心动值会涨哦';
     }
   }
 
   function initMeterTap() {
-    updateTapCount();
+    updateTapLabel(baseHeartValue, getTapCount());
+
     const bar = document.getElementById('meterBar');
     bar.addEventListener('click', function(e) {
       e.stopPropagation();
-      const count = getTapCount() + 1;
-      saveTapCount(count);
-      updateTapCount();
+      const taps = getTapCount() + 1;
+      saveTapCount(taps);
 
-      // 脉冲动画
+      // 重新计算并执行动画
+      const displayValue = Math.min(baseHeartValue + taps, 99);
+      document.getElementById('heartNum').textContent = displayValue;
+
       const fill = document.getElementById('meterFill');
+      fill.style.transition = 'width 0.5s cubic-bezier(0.22, 1, 0.36, 1)';
+      fill.style.width = displayValue + '%';
+
+      // 脉冲
       fill.classList.remove('pulse');
       void fill.offsetWidth;
       fill.classList.add('pulse');
+
+      updateTapLabel(baseHeartValue, taps);
 
       // 从点击位置冒出 +1
       const rect = bar.getBoundingClientRect();
