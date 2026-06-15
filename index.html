@@ -659,9 +659,9 @@
     const baseHeart = Math.floor(rng() * 51) + 50;
     baseHeartValue = baseHeart;
     const taps = getTapCount();
-    const displayValue = Math.min(baseHeart + taps, 100);
+    const displayValue = Math.min(baseHeart + taps * 0.1, 100);
 
-    document.getElementById('heartNum').textContent = displayValue;
+    document.getElementById('heartNum').textContent = Number.isInteger(displayValue) ? displayValue : displayValue.toFixed(1);
 
     // 动画：先归零 → 再涨到最终值
     const fill = document.getElementById('meterFill');
@@ -671,7 +671,7 @@
     fill.style.transition = 'width 1.8s cubic-bezier(0.22, 1, 0.36, 1)';
     requestAnimationFrame(function() {
       requestAnimationFrame(function() {
-        fill.style.width = displayValue + '%';
+        fill.style.width = displayValue.toFixed(1) + '%';
       });
     });
 
@@ -744,7 +744,9 @@
   function updateTapLabel(baseHeart, taps) {
     const el = document.getElementById('meterInteract');
     if (taps > 0) {
-      el.innerHTML = baseHeart + '% <span class="tap-bonus">+</span> 戳了 <span class="tap-count">' + taps + '</span> 次 <span class="tap-bonus">=</span> <span class="tap-count">' + Math.min(baseHeart + taps, 100) + '%</span>';
+      const result = Math.min(baseHeart + taps * 0.1, 100);
+      const resultStr = Number.isInteger(result) ? result : result.toFixed(1);
+      el.innerHTML = baseHeart + '% <span class="tap-bonus">+</span> 戳了 <span class="tap-count">' + taps + '</span> 次 <span class="tap-bonus">=</span> <span class="tap-count">' + resultStr + '%</span>';
     } else {
       el.innerHTML = '👆 戳一戳进度条，心动值会涨哦';
     }
@@ -760,12 +762,12 @@
       saveTapCount(taps);
 
       // 重新计算并执行动画
-      const displayValue = Math.min(baseHeartValue + taps, 100);
-      document.getElementById('heartNum').textContent = displayValue;
+      const displayValue = Math.min(baseHeartValue + taps * 0.1, 100);
+      document.getElementById('heartNum').textContent = Number.isInteger(displayValue) ? displayValue : displayValue.toFixed(1);
 
       const fill = document.getElementById('meterFill');
       fill.style.transition = 'width 0.5s cubic-bezier(0.22, 1, 0.36, 1)';
-      fill.style.width = displayValue + '%';
+      fill.style.width = displayValue.toFixed(1) + '%';
 
       // 脉冲
       fill.classList.remove('pulse');
