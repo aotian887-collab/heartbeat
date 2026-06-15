@@ -13,12 +13,12 @@
       font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
       display: flex;
       justify-content: center;
-      align-items: center;
-      padding: 20px;
-      overflow: hidden;
+      align-items: flex-start;
+      padding: 24px 20px 40px;
+      overflow-x: hidden;
+      overflow-y: auto;
     }
 
-    /* 飘落小元素背景 */
     .float-bg {
       position: fixed;
       top: 0; left: 0;
@@ -43,7 +43,7 @@
       z-index: 1;
       background: rgba(255,255,255,0.95);
       border-radius: 24px;
-      padding: 32px 26px 30px;
+      padding: 28px 24px 24px;
       width: 100%;
       max-width: 370px;
       box-shadow: 0 12px 40px rgba(180, 130, 160, 0.18), 0 2px 8px rgba(0,0,0,0.04);
@@ -59,7 +59,7 @@
       font-size: 12px;
       color: #b08a9e;
       letter-spacing: 3px;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
       font-weight: 500;
     }
 
@@ -67,7 +67,7 @@
       font-size: 12px;
       color: #c9a0b5;
       letter-spacing: 1px;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
     }
 
     .title {
@@ -76,7 +76,14 @@
       color: #a04060;
       margin-bottom: 4px;
       line-height: 1.4;
+      cursor: default;
+      user-select: none;
+      -webkit-user-select: none;
+      padding: 4px 8px;
+      border-radius: 12px;
+      transition: background 0.15s;
     }
+    .title:active { background: rgba(200,80,120,0.06); }
     .title .beat {
       display: inline-block;
       animation: beat 1.2s ease-in-out infinite;
@@ -88,20 +95,47 @@
       30%      { transform: scale(1); }
     }
 
-    .subtitle {
+    /* 天数 + 倒计时合并行 */
+    .day-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 22px;
       font-size: 12px;
       color: #bbb;
-      margin-bottom: 26px;
+    }
+    .day-row .sep { color: #e0c8d4; font-size: 14px; }
+    .day-tag {
+      background: #fdf4f7;
+      border-radius: 99px;
+      padding: 4px 14px;
+      color: #c7507a;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .day-tag.countdown {
+      background: #fef5e7;
+      color: #c08850;
+    }
+    .day-tag.milestone {
+      background: #ffeef4;
+      color: #c7507a;
+      font-weight: 700;
+      animation: pulseTag 1.5s ease-in-out infinite;
+    }
+    @keyframes pulseTag {
+      0%, 100% { transform: scale(1); }
+      50%      { transform: scale(1.05); }
     }
 
-    /* 心动指数 */
-    .heart-meter {
-      margin-bottom: 26px;
-    }
+    .heart-meter { margin-bottom: 22px; }
     .meter-label {
       font-size: 13px;
       color: #888;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       display: flex;
       justify-content: center;
       align-items: baseline;
@@ -140,22 +174,21 @@
       min-height: 16px;
     }
 
-    /* 话的区域 */
     .quote-box {
       background: #fdf8fa;
       border-left: 3px solid #d98fa9;
       border-radius: 0 16px 16px 0;
-      padding: 20px 22px;
-      margin-bottom: 26px;
+      padding: 18px 20px;
+      margin-bottom: 22px;
       text-align: left;
-      min-height: 80px;
+      min-height: 72px;
       display: flex;
       align-items: center;
     }
     .quote-text {
-      font-size: 15px;
+      font-size: 14.5px;
       color: #6b3a50;
-      line-height: 1.75;
+      line-height: 1.7;
       font-weight: 450;
       animation: fadeUp 0.5s ease;
     }
@@ -164,17 +197,16 @@
       100% { opacity: 1; transform: translateY(0); }
     }
 
-    /* 按钮 */
     .btn-group {
       display: flex;
       gap: 10px;
       justify-content: center;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
     }
     .btn {
       border: none;
       border-radius: 99px;
-      padding: 11px 22px;
+      padding: 10px 20px;
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
@@ -187,20 +219,18 @@
       color: #fff;
       box-shadow: 0 3px 12px rgba(199, 80, 122, 0.3);
       flex: 1;
-      justify-content: center;
     }
 
-    /* 回应区 */
     .response-area {
-      height: 48px;
+      height: 40px;
       display: flex;
       align-items: center;
       justify-content: center;
       overflow: hidden;
-      margin-bottom: 14px;
+      margin-bottom: 10px;
     }
     .response-text {
-      font-size: 14px;
+      font-size: 13px;
       color: #a04060;
       font-weight: 500;
       animation: popIn 0.4s cubic-bezier(0.22, 1, 0.36, 1);
@@ -211,28 +241,125 @@
     }
     .hidden { display: none !important; }
 
-    /* 换一换 */
     .refresh-btn {
       background: none;
       border: 1.5px dashed #d98fa9;
       border-radius: 99px;
-      padding: 9px 26px;
+      padding: 8px 24px;
       color: #b87090;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 500;
       cursor: pointer;
       transition: all 0.25s;
-      margin: 0 auto;
+      margin: 0 auto 18px;
       display: block;
     }
     .refresh-btn:active { background: #fdf8fa; }
 
-    .footer {
-      margin-top: 20px;
-      font-size: 10px;
-      color: #ddd;
+    /* ========== 心情打卡 ========== */
+    .mood-section {
+      border-top: 1px solid #f3e8ee;
+      padding-top: 18px;
+      margin-bottom: 6px;
+    }
+    .mood-label {
+      font-size: 12px;
+      color: #b8a0ae;
+      margin-bottom: 10px;
       letter-spacing: 1px;
     }
+    .mood-emojis {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+    .mood-btn {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      background: #fdf8fa;
+      font-size: 22px;
+      cursor: pointer;
+      transition: all 0.25s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+    .mood-btn:active { transform: scale(0.9); }
+    .mood-btn.selected {
+      border-color: #c7507a;
+      background: #fef0f4;
+      transform: scale(1.1);
+    }
+    .mood-status {
+      font-size: 11px;
+      color: #c9a8b8;
+      min-height: 16px;
+    }
+    .mood-status .mood-emoji { font-size: 14px; }
+
+    /* ========== 彩蛋弹窗 ========== */
+    .easter-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.35);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: overlayIn 0.3s ease;
+    }
+    @keyframes overlayIn {
+      0%   { opacity: 0; }
+      100% { opacity: 1; }
+    }
+    .easter-card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 32px 26px 26px;
+      max-width: 310px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+      animation: easterBounce 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    @keyframes easterBounce {
+      0%   { transform: scale(0.5); opacity: 0; }
+      70%  { transform: scale(1.05); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .easter-icon {
+      font-size: 40px;
+      margin-bottom: 12px;
+      animation: beat 1s ease-in-out 3;
+    }
+    .easter-title {
+      font-size: 16px;
+      color: #c7507a;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .easter-msg {
+      font-size: 14px;
+      color: #6b3a50;
+      line-height: 1.8;
+      margin-bottom: 20px;
+      text-align: left;
+    }
+    .easter-close {
+      background: linear-gradient(135deg, #c7507a, #b8406a);
+      color: #fff;
+      border: none;
+      border-radius: 99px;
+      padding: 10px 30px;
+      font-size: 14px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .easter-close:active { transform: scale(0.96); }
 
     /* 粒子 */
     .particles {
@@ -251,6 +378,13 @@
       0%   { opacity: 1; transform: translate(0,0) scale(1); }
       100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(0.3); }
     }
+
+    .footer {
+      margin-top: 2px;
+      font-size: 10px;
+      color: #ddd;
+      letter-spacing: 1px;
+    }
   </style>
 </head>
 <body>
@@ -261,8 +395,16 @@
 <div class="card">
   <div class="her-name">TO · 雨婷</div>
   <div class="date-text" id="dateText"></div>
-  <div class="title"><span class="beat">💓</span> 今日心动指数</div>
-  <div class="subtitle">认识第 <span id="dayCount">--</span> 天</div>
+
+  <!-- 标题：连续点3次触发彩蛋 -->
+  <div class="title" id="titleEl"><span class="beat">💓</span> 今日心动指数</div>
+
+  <!-- 天数 + 倒计时 -->
+  <div class="day-row">
+    <span class="day-tag">认识第 <span id="dayCount">--</span> 天</span>
+    <span class="sep">·</span>
+    <span class="day-tag countdown" id="countdownTag">距 100 天还有 <span id="countdownDays">--</span> 天</span>
+  </div>
 
   <div class="heart-meter">
     <div class="meter-label">
@@ -279,9 +421,7 @@
   </div>
 
   <div class="btn-group">
-    <button class="btn btn-primary" id="btnMeToo" onclick="onMeToo()">
-      我也这么觉得
-    </button>
+    <button class="btn btn-primary" id="btnMeToo" onclick="onMeToo()">我也这么觉得</button>
   </div>
 
   <div class="response-area">
@@ -290,15 +430,33 @@
 
   <button class="refresh-btn" onclick="refresh()">换一句话</button>
 
+  <!-- ========== 今日心情打卡 ========== -->
+  <div class="mood-section">
+    <div class="mood-label">🌙 今天的心情</div>
+    <div class="mood-emojis" id="moodEmojis"></div>
+    <div class="mood-status" id="moodStatus"></div>
+  </div>
+
   <div class="footer">— 用心准备的小惊喜 —</div>
 </div>
 
-<script>
-  // ============ 配置：你们认识的起始日期 ============
-  // 请修改为你们第一次认识/聊天的日期
-  const START_DATE = new Date("2026-04-27"); // 认识第1天
+<!-- 彩蛋弹窗 -->
+<div class="easter-overlay hidden" id="easterOverlay" onclick="closeEaster(event)">
+  <div class="easter-card" onclick="event.stopPropagation()">
+    <div class="easter-icon">🕵️‍♀️</div>
+    <div class="easter-title">你发现了我的秘密 🎁</div>
+    <div class="easter-msg" id="easterMsg"></div>
+    <button class="easter-close" onclick="closeEaster()">🍬 偷偷收好</button>
+  </div>
+</div>
 
-  // ============ 情话库（真诚克制，适合务实的她）============
+<script>
+  // ============ 配置 ============
+  const START_DATE = new Date("2026-04-27");
+  const DAYS_100 = new Date("2026-04-27");
+  DAYS_100.setDate(DAYS_100.getDate() + 99); // 第 100 天 = 2026-08-04
+
+  // ============ 情话库 ============
   const quotes = [
     "今天看到一个很有意思的事，第一反应是——要是你在旁边，我就能跟你讲了。",
     "你认真做事的样子，真的很好看。",
@@ -332,7 +490,6 @@
     "我在想，再过一段时间，我会不会更想见你。好像现在已经很想了。",
   ];
 
-  // 她点"我也这么觉得"后的回应（克制、真诚）
   const meTooResponses = [
     "那……我们好像想到一起去了 😊",
     "你这么说，我今天心情会很好",
@@ -354,6 +511,19 @@
     "真诚一点，她会感受到的",
   ];
 
+  // 心情 emoji 选项
+  const moodEmojis = ['😊', '😌', '🥰', '😴', '🤔', '😐'];
+
+  // 彩蛋内容：每天随机一句（用日期做种子，同一天看到的彩蛋一样）
+  const easterMessages = [
+    "有些话不好意思当面讲，所以藏这里啦——认识你之后，我的每一天都变得特别起来。谢谢你的出现，雨婷。",
+    "被你找到啦！其实我每天都在期待跟你聊天的那一刻，像一天里的小太阳。",
+    "嘘——这个秘密只有你知道：我最近很开心，因为你在我生活里。",
+    "如果心动有进度条，你大概已经把它拉满了。只是我还在等一个合适的时机，告诉你。",
+    "你知道为什么做了这个页面吗？因为我总想为你做点什么，哪怕只是一个让你笑一下的小东西。",
+    "我在想，100 天的时候送你点什么。如果你看到这段话，可以偷偷给我一点提示吗？",
+  ];
+
   // ============ 工具函数 ============
   function seedRandom(seed) {
     let s = seed;
@@ -373,8 +543,7 @@
   }
 
   function daysBetween(d1, d2) {
-    const oneDay = 24 * 60 * 60 * 1000;
-    return Math.round(Math.abs((d2 - d1) / oneDay));
+    return Math.round(Math.abs((d2 - d1) / 86400000));
   }
 
   // ============ 主逻辑 ============
@@ -382,47 +551,52 @@
   let quoteIndex = 0;
 
   function init() {
-    // 日期
     const now = new Date();
     const weekDays = ['日', '一', '二', '三', '四', '五', '六'];
-    const dateStr = `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 星期${weekDays[now.getDay()]}`;
-    document.getElementById('dateText').textContent = dateStr;
+    document.getElementById('dateText').textContent =
+      `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 星期${weekDays[now.getDay()]}`;
 
-    // 认识天数
     const days = daysBetween(START_DATE, now);
     document.getElementById('dayCount').textContent = days;
 
-    // 用日期做种子
+    // 倒计时
+    const remain = daysBetween(now, DAYS_100);
+    const ctd = document.getElementById('countdownTag');
+    if (remain <= 0) {
+      ctd.className = 'day-tag milestone';
+      ctd.innerHTML = '🎉 认识 100 天啦！';
+    } else {
+      document.getElementById('countdownDays').textContent = remain;
+    }
+
+    // 页面首次渲染用日期种子（同一天打开看到的内容一致）
     currentRng = seedRandom(dateSeed());
     render();
+
+    // 初始化心情打卡
+    initMood();
+
+    // 初始化彩蛋
+    initEaster();
   }
 
   function render() {
     const rng = currentRng;
-
-    // 心动指数：65~98（暧昧期，留一点空间）
     const heartValue = Math.floor(rng() * 34) + 65;
     document.getElementById('heartNum').textContent = heartValue;
-
     setTimeout(() => {
       document.getElementById('meterFill').style.width = heartValue + '%';
     }, 300);
-
     document.getElementById('meterTip').textContent = pick(tips, rng);
-
     quoteIndex = Math.floor(rng() * quotes.length);
     document.getElementById('quoteText').textContent = quotes[quoteIndex];
-
     document.getElementById('responseText').classList.add('hidden');
   }
 
   let refreshCount = 0;
-
   function refresh() {
     refreshCount++;
-    // 用刷新次数做偏移，确保每次都能跳到不同的句子
     let newIndex = (quoteIndex + 3 + refreshCount * 7) % quotes.length;
-    // 再叠加 Math.random 微调，确保相邻点击不走同一条路径
     newIndex = (newIndex + Math.floor(Math.random() * (quotes.length - 1))) % quotes.length;
     if (newIndex === quoteIndex) newIndex = (newIndex + 1) % quotes.length;
     quoteIndex = newIndex;
@@ -431,12 +605,10 @@
     el.offsetHeight;
     el.style.animation = 'fadeUp 0.5s ease';
     el.textContent = quotes[quoteIndex];
-
     document.getElementById('responseText').classList.add('hidden');
   }
 
   function onMeToo() {
-    // 直接用 Math.random，每次都是真正随机的
     const resp = meTooResponses[Math.floor(Math.random() * meTooResponses.length)];
     const el = document.getElementById('responseText');
     el.textContent = resp;
@@ -451,7 +623,6 @@
     const rect = btn.getBoundingClientRect();
     const cx = rect.left + rect.width / 2;
     const cy = rect.top + rect.height / 2;
-
     for (let i = 0; i < 8; i++) {
       const p = document.createElement('div');
       p.className = 'particle';
@@ -467,7 +638,82 @@
     }
   }
 
-  // ============ 飘落背景元素 ============
+  // ============ 心情打卡 ============
+  function initMood() {
+    const today = dateSeed().toString();
+    const saved = localStorage.getItem('mood_' + today);
+    const container = document.getElementById('moodEmojis');
+    const status = document.getElementById('moodStatus');
+
+    // 渲染 emoji 按钮
+    moodEmojis.forEach((emoji, idx) => {
+      const btn = document.createElement('button');
+      btn.className = 'mood-btn';
+      btn.textContent = emoji;
+      btn.onclick = function() {
+        selectMood(idx, emoji, today);
+      };
+      container.appendChild(btn);
+    });
+
+    // 恢复今天已保存的心情
+    if (saved) {
+      const idx = parseInt(saved);
+      container.children[idx]?.classList.add('selected');
+      status.innerHTML = '今天的心情：<span class="mood-emoji">' + moodEmojis[idx] + '</span>';
+    } else {
+      // 看看昨天有没有打卡
+      const d = new Date();
+      d.setDate(d.getDate() - 1);
+      const yday = '' + (d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate());
+      const ydaySaved = localStorage.getItem('mood_' + yday);
+      if (ydaySaved) {
+        status.textContent = '昨天的心情：' + moodEmojis[parseInt(ydaySaved)] + '  今天呢？';
+      }
+    }
+  }
+
+  function selectMood(idx, emoji, today) {
+    const container = document.getElementById('moodEmojis');
+    const status = document.getElementById('moodStatus');
+    // 切换选中状态
+    Array.from(container.children).forEach((c, i) => {
+      c.classList.toggle('selected', i === idx);
+    });
+    localStorage.setItem('mood_' + today, idx.toString());
+    status.innerHTML = '今天的心情：<span class="mood-emoji">' + emoji + '</span>';
+  }
+
+  // ============ 隐藏彩蛋 ============
+  let easterClicks = 0;
+  let easterTimer = null;
+
+  function initEaster() {
+    const titleEl = document.getElementById('titleEl');
+    titleEl.addEventListener('click', function() {
+      easterClicks++;
+      if (easterTimer) clearTimeout(easterTimer);
+      if (easterClicks >= 3) {
+        easterClicks = 0;
+        showEaster();
+        return;
+      }
+      easterTimer = setTimeout(function() { easterClicks = 0; }, 2500);
+    });
+  }
+
+  function showEaster() {
+    const msg = easterMessages[Math.floor(dateSeed() % easterMessages.length)];
+    document.getElementById('easterMsg').textContent = msg;
+    document.getElementById('easterOverlay').classList.remove('hidden');
+  }
+
+  function closeEaster(event) {
+    if (event && event.target !== document.getElementById('easterOverlay')) return;
+    document.getElementById('easterOverlay').classList.add('hidden');
+  }
+
+  // ============ 飘落背景 ============
   function spawnFloating() {
     const bg = document.getElementById('floatBg');
     const items = ['♡', '◌', '～', '·'];
